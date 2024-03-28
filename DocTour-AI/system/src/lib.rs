@@ -1,6 +1,7 @@
 pub mod benchmark;
 pub mod config;
 pub mod path;
-pub mod env;
+mod env;
+pub mod logger;
 
 // TODO: Singleton macro, if possible

@@ -9,27 +9,27 @@ static SINGLETON: Once = Once::new();
 static mut CONFIGS: Option<Mutex<Configs>> = None;
 
 #[derive(Serialize, Deserialize, Debug)]
-struct Kinds {
-    trace: bool,
-    info: bool,
-    warn: bool,
-    error: bool,
+pub struct Kinds {
+    pub trace: bool,
+    pub info: bool,
+    pub warn: bool,
+    pub error: bool,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
-struct Log {
-    on: bool,
-    kinds: Kinds,
+pub struct Log {
+    pub on: bool,
+    pub kinds: Kinds,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
-struct Configs {
+pub struct Configs {
     log: Log,
     profile: Option<String>,
 }
 
 impl Configs {
-    fn get<'a>() -> MutexGuard<'a, Configs> { // Will be unlocked for as long as the MutexGuard is in the caller's scope
+    pub fn get<'a>() -> MutexGuard<'a, Configs> { // Will be unlocked for as long as the MutexGuard is in the caller's scope
         SINGLETON.call_once(|| {
             unsafe {
                 CONFIGS = Some(Mutex::new(Configs::new()));
