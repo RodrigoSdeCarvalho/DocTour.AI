@@ -1,13 +1,11 @@
 {
-  "configs" : {
-    "log" : {
-      "on" : true,
-      "kinds" : {
-        "trace" : true,
-        "info" : true,
-        "warn" : true,
-        "error" : true
-      }
+  "log" : {
+    "on" : true,
+    "kinds" : {
+      "trace" : true,
+      "info" : true,
+      "warn" : true,
+      "error" : true
     }
   }
 }
