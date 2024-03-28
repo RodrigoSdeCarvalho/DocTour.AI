@@ -1,0 +1,14 @@
+{
+  "configs" : {
+    "log" : {
+      "profile" : "debug",
+      "on" : true,
+      "kinds" : {
+        "trace" : true,
+        "info" : true,
+        "warn" : true,
+        "error" : true
+      }
+    }
+  }
+}
