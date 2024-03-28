@@ -2,7 +2,7 @@
 
 members = [
     "schema_macro",
-    "doctour_ai",
+    "core",
     "system",
     "api"
 ]
