@@ -1,0 +1,10 @@
+[workspace]
+
+members = [
+    "schema_macro",
+    "doctour_ai",
+    "system",
+    "api"
+]
+
+resolver = "2"
