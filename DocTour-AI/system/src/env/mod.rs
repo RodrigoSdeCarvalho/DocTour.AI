@@ -10,5 +10,3 @@ trait Env {
     fn set_env(path: &SysPath) -> ();
     fn read_env() -> Self;
 }
-
-// TODO: Implement a macro to create specific env structs
