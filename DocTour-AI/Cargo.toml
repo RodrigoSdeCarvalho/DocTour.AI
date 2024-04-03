@@ -2,6 +2,7 @@
 
 members = [
     "schema_macro",
+    "benchmark_macro",
     "core",
     "system",
     "api"
