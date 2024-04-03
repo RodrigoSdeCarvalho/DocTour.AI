@@ -6,8 +6,6 @@ use dotenv::{from_path};
 use crate::path::{SysPath, join_root, Path};
 use crate::env::{Env};
 
-use benchmark_macro::benchmark;
-
 static SINGLETON: Once = Once::new();
 static mut CONFIG: Option<Mutex<Config>> = None;
 
@@ -50,7 +48,6 @@ impl Env for Config {
 }
 
 impl Config {
-    #[benchmark]
     pub fn open<'a>() -> MutexGuard<'a, Config> {
         Self::get()
     }
