@@ -19,6 +19,8 @@ pub struct Kinds {
 #[derive(Serialize, Deserialize, Debug)]
 pub struct Log {
     pub on: bool,
+    pub debug: bool,
+    pub save: bool,
     pub kinds: Kinds,
 }
 
@@ -45,7 +47,7 @@ impl Configs {
     }
 
     fn new() -> Configs {
-        let config: SysPath= join_root!("system", "configs.json");
+        let config: SysPath= join_root!("configs.json");
         let content: String = std::fs::read_to_string(config).unwrap();
         let config: Configs = serde_json::from_str(&content).unwrap();
         let profile: String = Env::open().profile();
@@ -59,6 +61,10 @@ impl Configs {
     pub fn log(&self) -> &Log {
         &self.log
     }
+
+    pub fn save(&self) -> bool { self.log.save }
+
+    pub fn debug(&self) -> bool { self.log.debug }
 
     pub fn profile(&self) -> &String {
         self.profile.as_ref().unwrap()

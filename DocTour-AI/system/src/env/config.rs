@@ -17,7 +17,7 @@ impl Env for Config {
     fn get<'a>() -> MutexGuard<'a, Config> { // Will be unlocked for as long as the MutexGuard is in the caller's scope
         SINGLETON.call_once(|| {
             unsafe {
-                let path: SysPath = join_root!("system", ".env");
+                let path: SysPath = join_root!(".env");
                 CONFIG = Some(Mutex::new(Config::new(path)));
             }
         });

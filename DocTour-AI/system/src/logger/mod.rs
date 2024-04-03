@@ -4,58 +4,36 @@ pub mod production;
 use super::config::Configs;
 use chrono::Local as time;
 
-// TODO: Implement Logger trait with a macro
-pub trait Logger where Self: Sized {
-    fn info(message: &str, show: bool) {
-        let logger: Self = Logger::open();
-        let config = Configs::get();
-        let should_log: bool = config.log().on && config.log().kinds.info;
+macro_rules! log_level {
+    ($log_level:ident) => {
+        fn $log_level(message: &str, show: bool) {
+            let logger: Self = LoggerEssentials::open();
+            let config = Configs::get();
+            let should_log: bool = config.log().on && config.log().kinds.$log_level;
 
-        if should_log {
-            if show { logger.save(message); }
-            let timestamp = time::now().format("%Y-%m-%d %H:%M:%S").to_string();
-            println!("[INFO] {} - {}", timestamp, message);
+            if should_log {
+                let timestamp = time::now().format("%Y-%m-%d %H:%M:%S").to_string();
+                let message = format!("[{:?}] {} - {}", stringify!($log_level).to_uppercase(), timestamp, message);
+                if config.save() { logger.save(&message); }
+
+                if show {
+                    if config.debug() { dbg!(message); }
+                    else { println!("{}", message); }
+                }
+            }
         }
-    }
-
-    fn trace (message: &str, show: bool) {
-        let logger: Self = Logger::open();
-        let config = Configs::get();
-        let should_log: bool = config.log().on && config.log().kinds.trace;
-
-        if should_log {
-            if show { logger.save(message); }
-            let timestamp = time::now().format("%Y-%m-%d %H:%M:%S").to_string();
-            println!("[TRACE] {} - {}", timestamp, message);
-        }
-    }
-
-    fn warn(message: &str, show: bool) {
-        let logger: Self = Logger::open();
-        let config = Configs::get();
-        let should_log: bool = config.log().on && config.log().kinds.warn;
-
-        if should_log {
-            if show { logger.save(message); }
-            let timestamp = time::now().format("%Y-%m-%d %H:%M:%S").to_string();
-            println!("[WARNING] {} - {}", timestamp, message);
-        }
-    }
-
-    fn error (message: &str, show: bool) {
-        let logger: Self = Logger::open();
-
-        let config = Configs::get();
-        let should_log: bool = config.log().on && config.log().kinds.error;
-
-        if should_log {
-            if show { logger.save(message); }
-            let timestamp = time::now().format("%Y-%m-%d %H:%M:%S").to_string();
-            println!("[ERROR] {} - {}", timestamp, message);
-        }
-    }
-
-    fn open() -> Self;
-    fn save(&self, message: &str);
+    };
 }
 
+pub trait Logger where Self: LoggerEssentials {
+    log_level!(info);
+    log_level!(trace);
+    log_level!(warn);
+    log_level!(error);
+}
+
+/// Private trait so that the Logger will only be accessible through the Logger trait
+trait LoggerEssentials where Self: Sized {
+    fn open() -> Self;
+    fn save(&self, message: &String);
+}
