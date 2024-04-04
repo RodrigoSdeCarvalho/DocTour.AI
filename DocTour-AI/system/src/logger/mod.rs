@@ -32,8 +32,8 @@ pub trait Logger where Self: LoggerEssentials {
     log_level!(error);
 }
 
-/// Private trait so that the Logger will only be accessible through the Logger trait
-trait LoggerEssentials where Self: Sized {
+/// Private trait, outside of this crate, so that the Logger will only be accessible through the Logger trait
+pub(crate) trait LoggerEssentials where Self: Sized {
     fn open() -> Self;
     fn save(&self, message: &String);
 }

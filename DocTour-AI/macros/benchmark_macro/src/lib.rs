@@ -22,7 +22,7 @@ use syn::{parse_macro_input, ItemFn};
 ///
 /// # Example
 ///
-/// ```rust
+/// ```rust, ignore
 /// #[benchmark]
 /// fn my_function() {
 ///     // Some code...

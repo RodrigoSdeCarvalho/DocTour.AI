@@ -22,8 +22,8 @@ jobs:
 
         run: |
           cd DocTour-AI
-          cargo build --verbose
+          cargo build
       - name: Run tests
         run: |
           cd DocTour-AI
-          cargo test --verbose -p benchmark_macro --doc
+          cargo test
