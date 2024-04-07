@@ -1,7 +1,10 @@
-pub mod benchmark;
-pub mod config;
-pub mod path;
-mod env;
-pub mod logger;
+mod benchmark;
 
-// TODO: Singleton macro, if possible
+mod path;
+pub use path::{SysPath, Path};
+
+mod logger;
+pub use logger::Logger;
+
+mod config;
+mod env;
