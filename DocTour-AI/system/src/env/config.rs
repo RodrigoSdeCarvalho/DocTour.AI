@@ -1,7 +1,8 @@
 use std::env;
-use std::sync::{Mutex, MutexGuard, Once};
+use std::sync::{Mutex, Once};
 
 use dotenv::{from_path};
+use serde::{Deserialize, Serialize};
 
 use crate::path::{SysPath, join_root, Path};
 use crate::env::{Env};
@@ -9,12 +10,28 @@ use crate::env::{Env};
 static SINGLETON: Once = Once::new();
 static mut CONFIG: Option<Mutex<Config>> = None;
 
-pub struct Config {
+pub(crate) struct Config {
     profile: String
 }
 
+#[derive(Debug, PartialEq, Serialize, Deserialize, Copy, Clone)]
+pub(crate) enum Profile {
+    DEBUG,
+    PRODUCTION
+}
+
+impl Profile {
+    fn from_string(input: &String) -> Profile {
+        match input.as_str() {
+            "DEBUG" => Profile::DEBUG,
+            "PRODUCTION" => Profile::PRODUCTION,
+            _ => unreachable!("Invalid profile"), // CI/CD must enforce this with ENV vars
+        }
+    }
+}
+
 impl Env for Config {
-    fn get<'a>() -> MutexGuard<'a, Config> { // Will be unlocked for as long as the MutexGuard is in the caller's scope
+    fn get<'a>() -> &'a Mutex<Config> { // Will be locked for as long as the MutexGuard is in the caller's scope
         SINGLETON.call_once(|| {
             unsafe {
                 let path: SysPath = join_root!(".env");
@@ -24,8 +41,6 @@ impl Env for Config {
 
         unsafe {
             CONFIG.as_ref()
-                .unwrap()
-                .lock()
                 .unwrap()
         }
     }
@@ -48,12 +63,10 @@ impl Env for Config {
 }
 
 impl Config {
-    pub fn open<'a>() -> MutexGuard<'a, Config> {
-        Self::get()
-    }
+    pub fn open<'a>() -> &'a Mutex<Config> { Self::get() }
 
-    pub fn profile(self: &Self) -> String {
-        self.profile.clone()
+    pub fn profile(self: &Self) -> Profile {
+        Profile::from_string(&self.profile)
     }
 }
 
@@ -63,8 +76,9 @@ mod tests {
 
     #[test]
     fn test_config() {
-        let config = Config::open();
-        println!("Config profile: {}", config.profile());
-        assert_eq!(config.profile(), "DEBUG");
+        let config = Config::open().lock().unwrap();
+        let prof_works: bool = (config.profile() == Profile::DEBUG) ||
+                               (config.profile() == Profile::PRODUCTION);
+        assert_eq!(prof_works, true);
     }
 }

@@ -2,15 +2,16 @@ use std::fs::OpenOptions;
 use std::io::Write;
 use chrono::Local as time;
 
-use super::{Logger, LoggerEssentials};
+use super::{ILogger, LoggerEssentials};
 use crate::path::{SysPath, Path, join_root};
 
-struct DebugLogger {
+/// Logger for development purposes. This Logger will save the logs in a .txt file.
+pub(super) struct DebugLogger {
     folder: SysPath,
     file_name: String,
 }
 
-impl Logger for DebugLogger {}
+impl ILogger for DebugLogger {}
 
 impl LoggerEssentials for DebugLogger {
     fn open() -> Self {
@@ -45,8 +46,9 @@ mod tests {
     #[test]
     fn test_logger() {
         DebugLogger::info("Test info message", true);
-        DebugLogger::trace("Test trace message", true);
-        DebugLogger::warn("Test warning message", true);
-        DebugLogger::error("Test error message", true);
+        DebugLogger::trace("Test trace message".to_string(), true);
+        DebugLogger::warn(&"Test warning message".to_string(), true);
+        let test: String = String::from("Test error message");
+        DebugLogger::error(test, true);
     }
 }

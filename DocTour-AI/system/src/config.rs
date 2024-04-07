@@ -1,7 +1,7 @@
-use std::sync::{Mutex, MutexGuard, Once};
+use std::sync::{Mutex, Once};
 use serde::{Deserialize, Serialize};
 
-use crate::env::{config::Config as Env};
+pub(crate) use crate::env::{config::{Config as Env, Profile}};
 use crate::join_root;
 use crate::path::{Path, SysPath};
 
@@ -27,11 +27,13 @@ pub struct Log {
 #[derive(Serialize, Deserialize, Debug)]
 pub struct Configs {
     log: Log,
-    profile: Option<String>,
+    profile: Option<Profile>,
 }
 
 impl Configs {
-    pub fn get<'a>() -> MutexGuard<'a, Configs> { // Will be unlocked for as long as the MutexGuard is in the caller's scope
+    pub fn open<'a>() -> &'a Mutex<Configs> { Self::get() }
+
+    fn get<'a>() -> &'a Mutex<Configs> { // Will be unlocked for as long as the MutexGuard is in the caller's scope
         SINGLETON.call_once(|| {
             unsafe {
                 CONFIGS = Some(Mutex::new(Configs::new()));
@@ -41,8 +43,6 @@ impl Configs {
         unsafe {
             CONFIGS.as_ref()
                 .unwrap()
-                .lock()
-                .unwrap()
         }
     }
 
@@ -50,7 +50,7 @@ impl Configs {
         let config: SysPath= join_root!("configs.json");
         let content: String = std::fs::read_to_string(config).unwrap();
         let config: Configs = serde_json::from_str(&content).unwrap();
-        let profile: String = Env::open().profile();
+        let profile: Profile = Env::open().lock().unwrap().profile();
 
         Configs {
             profile: Some(profile),
@@ -66,7 +66,7 @@ impl Configs {
 
     pub fn debug(&self) -> bool { self.log.debug }
 
-    pub fn profile(&self) -> &String {
+    pub fn profile(&self) -> &Profile {
         self.profile.as_ref().unwrap()
     }
 }
@@ -77,8 +77,6 @@ mod tests {
 
     #[test]
     fn test_new() {
-        let config = Configs::get();
-        println!("{:?}", config.profile());
-        println!("{:?}", config.log());
+        let config = Configs::open().lock().unwrap();
     }
 }
