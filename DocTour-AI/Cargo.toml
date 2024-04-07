@@ -1,7 +1,8 @@
 [workspace]
 
 members = [
-    "schema_macro",
+    "macros/schema_macro",
+    "macros/benchmark_macro",
     "core",
     "system",
     "api"

@@ -20,47 +20,31 @@ macro_rules! join_root {
         Path::join_root(vec![$($arg),*])
     };
 }
-pub(crate) use join_root; // Exports the macro to the crate
+pub(crate) use join_root;
 
 impl Path {
-
     pub fn get_model<T>(file_name: T) -> SysPath
-        where T: Display {
+        where T: Display
+    {
         let model_path = Path::join(&Path::get_models(), file_name.to_string());
 
         model_path
     }
 
-    pub fn get_raw_chat<T>(file_name: T) -> SysPath
-        where T: Display {
-        let mut raw_chat_path: SysPath = Path::join(&mut Path::get_assets(), "raw_chats".to_string());
-        raw_chat_path = Path::join(&raw_chat_path, file_name.to_string());
-
-        raw_chat_path
-    }
-
-    pub fn get_processed_chat<T>(file_name: T) -> SysPath
-        where T: Display {
-        let mut processed_chat_path: SysPath = Path::join(&mut Path::get_assets(), "processed_chats".to_string());
-        processed_chat_path = Path::join(&processed_chat_path, file_name.to_string());
-
-        processed_chat_path
-    }
-
     pub fn get_models() -> SysPath {
-        let models_path: SysPath = join_root!("adam", "schemas");
+        let models_path: SysPath = join_root!("assets", "models");
 
         models_path
     }
 
     pub fn get_assets() -> SysPath {
-        let assets_path: SysPath = join_root!("adam", "assets");
+        let assets_path: SysPath = join_root!("assets");
 
         assets_path
     }
 
     pub fn join_root(file_folder_names: Vec<&str>) -> SysPath {
-        let path: MutexGuard<Path> = Path::get();
+        let path: MutexGuard<Path> = Path::get().lock().unwrap();
         let mut joined_path: SysPath = path.root.clone();
 
         for file_folder_name in file_folder_names {
@@ -77,7 +61,7 @@ impl Path {
         joined_path
     }
 
-    fn get<'a>() -> MutexGuard<'a, Path> { // Will be unlocked for as long as the MutexGuard is in the caller's scope
+    fn get<'a>() -> &'a Mutex<Path> { // Will be unlocked for as long as the MutexGuard is in the caller's scope
         SINGLETON.call_once(|| {
             let root: SysPath = Path::find_root();
             unsafe {
@@ -88,8 +72,7 @@ impl Path {
         unsafe {
             PATH.as_ref()
                 .unwrap()
-                .lock()
-                .unwrap()
+
         }
     }
 
@@ -133,8 +116,20 @@ mod tests {
     #[test]
     fn test_joins() {
         let root: SysPath = Path::find_root();
-        let joined_path: SysPath = join_root!("adam", "assets", "raw_chats", "chat.txt");
+        let joined_path: SysPath = join_root!("assets");
 
-        assert_eq!(joined_path, Path::join(&root, "adam/assets/raw_chats/chat.txt".to_string()));
+        assert_eq!(joined_path, Path::join(&root, "assets".to_string()));
+    }
+
+    #[test]
+    fn test_get_folders() {
+        let assets_path = Path::get_assets();
+        println!("{:?}", assets_path);
+
+        let models_path = Path::get_models();
+        println!("{:?}", models_path);
+
+        let llama2_path = Path::get_model("Llama2");
+        print!("{:?}", llama2_path);
     }
 }

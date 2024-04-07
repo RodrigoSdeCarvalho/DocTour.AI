@@ -7,17 +7,16 @@ macro_rules! benchmark {
                 $($token)+
             };
 
-            println!("BENCHMARK<{}> = {:?}ms", stringify!($($token)+), _instant.elapsed().as_millis());
+            let benchmark_log = format!("[Benchmark] {} took {}ms", stringify!($($token)+), _instant.elapsed().as_millis());
+            println!("{}", benchmark_log);
+
             _result
         }
     }
 }
-pub use benchmark; // Exports the macro to the crate
 
 #[cfg(test)]
 mod tests {
-    use super::*;
-
     fn stress_test() -> String {
         for _ in 0..1000000 {
             let _ = 1 + 1;

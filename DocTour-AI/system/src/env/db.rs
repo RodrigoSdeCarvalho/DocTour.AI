@@ -1,5 +1,5 @@
 use std::env;
-use std::sync::{Mutex, MutexGuard, Once};
+use std::sync::{Mutex, Once};
 
 use dotenv::{from_path};
 
@@ -18,18 +18,16 @@ pub struct DBEnv {
 }
 
 impl Env for DBEnv {
-    fn get<'a>() -> MutexGuard<'a, DBEnv> { // Will be unlocked for as long as the MutexGuard is in the caller's scope
+    fn get<'a>() -> &'a Mutex<DBEnv> { // Will be unlocked for as long as the MutexGuard is in the caller's scope
         SINGLETON.call_once(|| {
             unsafe {
-                let path: SysPath = join_root!("system", ".env");
+                let path: SysPath = join_root!(".env");
                 DBENV = Some(Mutex::new(DBEnv::new(path)));
             }
         });
 
         unsafe {
             DBENV.as_ref()
-                .unwrap()
-                .lock()
                 .unwrap()
         }
     }
@@ -52,13 +50,13 @@ impl Env for DBEnv {
                 .unwrap(),
             db_name: env::var("DBNAME").unwrap(),
             user: env::var("DBUSER").unwrap(),
-            pass: env::var("PASSWORD").unwrap(),
+            pass: env::var("PASS").unwrap(),
         }
     }
 }
 
 impl DBEnv {
-    pub fn open<'a>() -> MutexGuard<'a, DBEnv> {
+    pub fn open<'a>() -> &'a Mutex<DBEnv> {
         Self::get()
     }
 
@@ -80,5 +78,20 @@ impl DBEnv {
 
     pub fn pass(self: &Self) -> String {
         self.pass.clone()
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_db_env() {
+        let db_env = DBEnv::open().lock().unwrap();
+        println!("{:?}", db_env.host());
+        println!("{:?}", db_env.port());
+        println!("{:?}", db_env.db_name());
+        println!("{:?}", db_env.user());
+        println!("{:?}", db_env.pass());
     }
 }
